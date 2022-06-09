@@ -12,6 +12,11 @@ export default class BoardAdmin extends Component {
   constructor(props) {
     super(props);
     this.state = this.intialState;
+    this.state={
+      addresss: [],
+      floors: [],
+      show:false
+    };
     this.seatChange=this.seatChange.bind(this);
     this.submitSeat=this.submitSeat.bind(this);
   }
@@ -30,7 +35,35 @@ export default class BoardAdmin extends Component {
       if(adminId){
         this.findAdminById(adminId);
       }
+      this.findAllLocations();
+      this.findAllFloors();
     }
+
+    findAllLocations= () =>{
+      axios.get("http://localhost:8080/api/seatbooking/locations")
+      .then(response =>response.data)
+      .then((data)=>{
+        this.setState({
+          addresss:[{value:'',display:'Select Location From Dropdown List'}]
+          .concat(data.map(address =>{
+            return{value:address,display:address}
+          }))
+        });
+      });
+    };
+
+    findAllFloors= () =>{
+      axios.get("http://localhost:8080/api/seatbooking/floors")
+      .then(response =>response.data)
+      .then((data)=>{
+        this.setState({
+          floors:[{value:'',display:'Select floor From Dropdown List'}]
+          .concat(data.map(floor =>{
+            return{value:floor,display:floor}
+          }))
+        });
+      });
+    };
 
     findAdminById = (adminId) => {
       axios.get("http://localhost:8080/api/admin/AdminstrationOffice/"+adminId)
@@ -59,6 +92,7 @@ export default class BoardAdmin extends Component {
       event.preventDefault();
 
       const seat={
+        office_id:this.state.office_id,
         address: this.state.address,
         floor: this.state.floor,
         available_spaces: this.state.available_spaces,
@@ -97,7 +131,7 @@ export default class BoardAdmin extends Component {
     event.preventDefault();
 
     const seat={
-      id: this.state.office_id,
+      office_id: this.state.office_id,
       address: this.state.address,
       floor: this.state.floor,
       available_spaces: this.state.available_spaces,
@@ -129,7 +163,9 @@ export default class BoardAdmin extends Component {
       <div>
         <div style={{"display":this.state.show ? "block" : "none"}}>
         <MyToast show = {this.state.show} message = {this.state.method === "put" ? "AdminstrationOffice updated Successfully"  : "AdminstrationOffice Booked Successfully"} type="success"/>
-         </div>  
+        </div> 
+      
+      
       <div className="container">
         <header className="jumbotron">
           <h3>Welcome to the Online Organization AdminstrationOffices System</h3>
@@ -137,33 +173,27 @@ export default class BoardAdmin extends Component {
         </header>
       </div>
       <Form  className="card card-container" onSubmit={this.state.office_id ? this.updateAdminOffice : this.submitSeat} onReset={this.resetChange} id="AdminFormId"><h4><FontAwesomeIcon icon={this.state.office_id ? faEdit : faPlusSquare} />{this.state.office_id ? " Update AdminOffice-Booking" : " AdminstrationOffice-Booking"}</h4>
-        <div>
+        <div>                
                 <div className="form-group">
                   <label htmlFor="name"><FontAwesomeIcon icon={faAddressCard} /> Address</label>
-                  <Input
-                    required 
-                    autoComplete="off"
-                    type="text"
-                    className="form-control"
-                    name="address"
-                    value={address}
-                    onChange={this.seatChange}
-                  />
+                  <select name="address" value={address} onChange={this.seatChange} required>
+                  {this.state.addresss.map(address =>
+                      <option key={address.value} value={address.value}>
+                        {address.display}
+                      </option>
+                    )}
+                  </select>
+                  </div>
+                  <div className="form-group">
+                  <label htmlFor="floor"><FontAwesomeIcon icon={faStairs} /> Floor Details</label>
+                  <select name="floor" value={floor} onChange={this.seatChange} required>
+                  {this.state.floors.map(floor =>
+                      <option key={floor.value} value={floor.value}>
+                        {floor.display}
+                      </option>
+                    )}
+                  </select>
                 </div>
-
-                <div className="form-group">
-                  <label htmlFor="email"><FontAwesomeIcon icon={faStairs} /> Floor Details:</label>
-                  <Input
-                    required 
-                    autoComplete="off"
-                    type="text"
-                    className="form-control"
-                    name="floor"
-                    value={floor}
-                    onChange={this.seatChange}
-                  />
-                </div>
-
                 <div className="form-group">
                   <label htmlFor="address"><FontAwesomeIcon icon={faSearch} /> Available_Spaces</label>
                   <Input

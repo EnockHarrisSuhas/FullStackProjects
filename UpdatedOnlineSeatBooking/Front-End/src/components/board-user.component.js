@@ -16,6 +16,10 @@ export default class BoardUser extends Component {
   constructor(props) {
     super(props);
     this.state = this.intialState;
+    this.state={
+      addresss:[],
+      show:false
+    };
     this.seatChange=this.seatChange.bind(this);
     this.submitSeat=this.submitSeat.bind(this);
   }
@@ -25,7 +29,7 @@ export default class BoardUser extends Component {
       seat_id: "",
       name: "",
       email: "",
-      address: "",
+      address:"",
       seats: "",
       mobile: "",
     };
@@ -35,7 +39,21 @@ export default class BoardUser extends Component {
       if(seatId){
         this.findSeatById(seatId);
       }
+      this.findAllLocations();
     }
+
+    findAllLocations= () =>{
+      axios.get("http://localhost:8080/api/seatbooking/locations")
+      .then(response =>response.data)
+      .then((data)=>{
+        this.setState({
+          addresss:[{value:'',display:'Select Location From Dropdown List'}]
+          .concat(data.map(address =>{
+            return{value:address,display:address}
+          }))
+        });
+      });
+    };
 
     findSeatById = (seatId) => {
       axios.get("http://localhost:8080/api/seatbooking/SeatBooking/"+seatId)
@@ -173,15 +191,13 @@ export default class BoardUser extends Component {
 
                 <div className="form-group">
                   <label htmlFor="address"><FontAwesomeIcon icon={faAddressCard} /> Address</label>
-                  <Input
-                    required 
-                    autoComplete="off"
-                    type="text"
-                    className="form-control"
-                    name="address"
-                    value={address}
-                    onChange={this.seatChange}
-                  />
+                  <select name="address" value={address} onChange={this.seatChange} required>
+                  {this.state.addresss.map(address =>
+                      <option key={address.value} value={address.value}>
+                        {address.display}
+                      </option>
+                    )}
+                  </select>
                 </div>
 
                 <div className="form-group">
